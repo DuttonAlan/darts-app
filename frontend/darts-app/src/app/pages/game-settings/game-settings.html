@@ -1,0 +1,92 @@
+<div class="settings-container">
+    <div class="settings">
+        <!-- PLAYER -->
+        <div class="setting-section">
+        <h1>Player details</h1>
+
+        <mat-button-toggle-group
+            [(ngModel)]="settings.mode"
+            [ngModelOptions]="{ standalone: true }"
+            exclusive>
+            <mat-button-toggle class="select-item" [checked]="true" value="SINGLE">Solo</mat-button-toggle>
+            <mat-button-toggle class="select-item" value="TEAMS">Teams</mat-button-toggle>
+        </mat-button-toggle-group>
+
+        <div class="players">
+            @for (player of settings.players; track player) {
+            <mat-chip>
+                {{ player.name }}
+            </mat-chip>
+            }
+
+            <button
+            mat-mini-fab
+            color="primary"
+            (click)="addPlayer()">
+            <mat-icon>add</mat-icon>
+            </button>
+        </div>
+        </div>
+
+        <!-- GAME SETTINGS -->
+        <div class="setting-section">
+            <h1>Game Settings</h1>
+
+            <mat-button-toggle-group
+                [(ngModel)]="settings.winType"
+                exclusive>
+                <mat-button-toggle class="select-item" [checked]="true" value="BEST_OF">Best of</mat-button-toggle>
+                <mat-button-toggle class="select-item" value="FIRST_TO">First to</mat-button-toggle>
+            </mat-button-toggle-group>
+
+            <div class="input-container">
+                <mat-form-field class="example-form-field">
+                    <mat-label>Legs</mat-label>
+                    <input matInput type="text" [(ngModel)]="settings.legs">
+                </mat-form-field>
+
+                <mat-form-field class="example-form-field">
+                    <mat-label>Sets</mat-label>
+                    <input matInput type="text" [(ngModel)]="settings.sets">
+                </mat-form-field>
+            </div>
+
+            <mat-button-toggle-group
+                [(ngModel)]="settings.startScore"
+                exclusive>
+                @for (score of startScores; track score)  {
+                <mat-button-toggle class="select-item" [value]="score">
+                    {{ score }}
+                </mat-button-toggle>
+                }
+            </mat-button-toggle-group>
+
+            <mat-button-toggle-group
+                [(ngModel)]="settings.inMode"
+                exclusive>
+                @for (m of inModes; track m.value) {
+                <mat-button-toggle class="select-item" [value]="m.value">
+                    {{ m.label }}
+                </mat-button-toggle>
+                }
+            </mat-button-toggle-group>
+
+            <mat-button-toggle-group
+                [(ngModel)]="settings.outMode"
+                exclusive>
+                @for (m of outModes; track m.value) {
+                <mat-button-toggle class="select-item" [value]="m.value">
+                    {{ m.label }}
+                </mat-button-toggle>
+                }
+            </mat-button-toggle-group>
+        </div>
+    </div>
+
+    <button
+        mat-raised-button
+        class="start-button"
+        (click)="startGame()">
+        Start Game
+    </button>
+</div>

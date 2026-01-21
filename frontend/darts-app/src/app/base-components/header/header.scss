@@ -1,4 +1,40 @@
-.header-container {
-    height: 10vh;
-    background-color: lightgreen;
+.aim-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+  color: #5f6368;
+  background-color: #f6f8fc;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 6px #0000001f,inset 0 -1px #dadce0;
+
+  .title-section {
+    display: flex;
+    align-items: center;
+    padding-left: 3rem;
+    gap: 8px;
+
+    .dart-logo {
+        height: 24px;
+        width: 24px;
+    }
+
+    .title {
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+  }
+
+  .action-section {
+    display: flex;
+    margin-top: 8px;
+    padding-right: 1rem;
+
+    .profile-btn {
+      background: none;
+      border: none;
+      color: #5f6368;
+      cursor: pointer;
+    }
+  }
 }

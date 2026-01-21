@@ -1,0 +1,18 @@
+<!-- Profile button that opens the menu -->
+<button
+  class="profile-btn"
+  mat-icon-button
+  [matMenuTriggerFor]="profileMenu"
+  aria-label="User profile menu"
+>
+  <mat-icon>account_circle</mat-icon>
+</button>
+
+<!-- Dropdown menu -->
+<mat-menu #profileMenu="matMenu" xPosition="before" yPosition="below">
+  <button mat-menu-item (click)="onLogout()">
+    <mat-icon>logout</mat-icon>
+    Logout
+  </button>
+</mat-menu>
+

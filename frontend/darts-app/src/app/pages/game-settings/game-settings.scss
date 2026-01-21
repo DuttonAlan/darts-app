@@ -1,0 +1,37 @@
+.settings-container {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    color: #5f6368;
+
+    .settings {
+        display: flex;
+        gap: 48px;
+
+        .setting-section {
+            display: flex;
+            flex-direction: column;
+            width: 50vw;
+            gap: 24px;
+            padding: 20px;
+            border-radius: 16px;
+
+            .select-item {
+                width: 100%;
+                font-size: 1.2rem;
+            }
+
+            .input-container {
+                display: flex;
+                justify-content: space-between;
+            }
+        }
+    }
+
+    .start-button {
+        border: #5f6368 1px solid;
+        margin-top: 64px;
+        font-size: 4rem;
+        height: 128px;
+    }
+}
