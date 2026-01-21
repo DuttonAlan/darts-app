@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { GameSettings } from '../../interfaces/game-settings';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSliderModule } from '@angular/material/slider';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-game-settings',
@@ -27,7 +28,8 @@ import { MatSliderModule } from '@angular/material/slider';
   styleUrl: './game-settings.scss',
 })
 export class GameSettingsComponent {
-
+  private router = inject(Router);
+  
   settings: GameSettings = {
     mode: 'SINGLE',
     winType: 'BEST_OF',
@@ -71,5 +73,9 @@ export class GameSettingsComponent {
 
   public startGame(): void {
     console.log('Spiel starten mit Settings:', this.settings);
+  }
+
+  public navigateToHomepage(): void {
+    this.router.navigate(['/'])
   }
 }
