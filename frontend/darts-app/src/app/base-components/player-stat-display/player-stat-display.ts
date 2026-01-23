@@ -12,5 +12,9 @@ import { Player } from '../../interfaces/player';
 export class PlayerStatDisplay {
   player = input.required<Player>();
 
-  points = input<number[]>();
+  points = input<number[] | undefined>();
+
+  public get thrownPoints(): number {
+    return this.points()?.reduce((sum, n) => sum + n, 0) ?? 0;
+  }
 }

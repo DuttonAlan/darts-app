@@ -41,6 +41,12 @@ export const defaultSettings: GameSettings = {
         name: 'Alex',
         isBot: false,
         isCurrentPlayer: false
+      },
+      {
+        id: 3,
+        name: 'Jannik',
+        isBot: false,
+        isCurrentPlayer: false
       }
   ]
 }

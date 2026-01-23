@@ -7,5 +7,5 @@ import { Component, input } from '@angular/core';
   styleUrl: './point-display.scss',
 })
 export class PointDisplay {
-  points = input<number>();
+  points = input<number | undefined>();
 }

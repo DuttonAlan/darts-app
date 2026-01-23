@@ -12,8 +12,9 @@
 
             <div class="players">
                 @for (player of settings.players; track player) {
-                    <app-player-stat-display 
-                        [player]="player">
+                    <app-player-stat-display
+                        [player]="player"
+                        [points]="player.isCurrentPlayer ? currentThrows : []">
 
                     </app-player-stat-display>
                 }
@@ -21,7 +22,7 @@
         </div>
 
         <div class="dart-keyboard">
-            <app-dart-keyboard>
+            <app-dart-keyboard (valueSelected)="newThrow($event)" (back)="redoThrow()">
 
             </app-dart-keyboard>
 
@@ -34,4 +35,8 @@
             </button>
         </div>
     </div>
+
+    @if (isBreakfast) {
+        <app-kraft-aus-dem-inneren></app-kraft-aus-dem-inneren>
+    }
 </div>

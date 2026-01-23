@@ -1,11 +1,21 @@
-<div [ngClass]="player().isCurrentPlayer ? 'stat-display-container current-player' : 'stat-display-container'">
-    <div class="point-info">
+<div [ngClass]="player().isCurrentPlayer ? 'stat-display-container current-player' : 'stat-display-container disabled'">
+    <div [ngClass]="player().isCurrentPlayer ? 'point-info' : 'point-info disabled'">
         <div class="stat-header">
             <div class="dart-icons-name">
                 <div class="dart-container">
-                    <img class="dart-logo" src="/assets/icons/dart-icon.svg" alt="Dart Icons" />
-                    <img class="dart-logo" src="/assets/icons/dart-icon.svg" alt="Dart Icons" />
-                    <img class="dart-logo" src="/assets/icons/dart-icon.svg" alt="Dart Icons" />
+                    @if (player().isCurrentPlayer) {
+                        @if (!points()?.[0]) {
+                            <img class="dart-logo" src="/assets/icons/dart-icon.svg" alt="Dart Icons" />
+                        }
+
+                        @if (!points()?.[1]) {
+                            <img class="dart-logo" src="/assets/icons/dart-icon.svg" alt="Dart Icons" />
+                        }
+
+                        @if (!points()?.[2]) {
+                            <img class="dart-logo" src="/assets/icons/dart-icon.svg" alt="Dart Icons" />
+                        }
+                    }
                 </div>
 
                 <span> {{ player().name }} </span>
@@ -17,19 +27,19 @@
         </div>
 
         <div class="stat-content">
-            <app-point-display [points]="">
+            <app-point-display [points]="points()?.[0]">
 
             </app-point-display>
 
-            <app-point-display [points]="">
+            <app-point-display [points]="points()?.[1]">
                 
             </app-point-display>
 
-            <app-point-display [points]="">
+            <app-point-display [points]="points()?.[2]">
                 
             </app-point-display>
 
-            <span class="current-points">0</span>
+            <span class="current-points"> {{ thrownPoints }} </span>
         </div>
     </div>
 
