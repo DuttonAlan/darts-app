@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { defaultSettings, GameSettings } from '../../interfaces/game-settings';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -29,7 +29,7 @@ import { Subject, takeUntil } from 'rxjs';
   templateUrl: './game-settings.html',
   styleUrl: './game-settings.scss',
 })
-export class GameSettingsComponent implements OnInit {
+export class GameSettingsComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private appStateService = inject(AppStateService);
 
@@ -70,11 +70,15 @@ export class GameSettingsComponent implements OnInit {
       id: 0,
       name: `guest_${this.settings.players.length + 1}`,
       isBot: false,
-      isCurrentPlayer: false
+      isCurrentPlayer: false,
+      legsWon: 0,
+      setsWon: 0,
+      lastTurnThrows: []
     });
   }
 
   public startGame(): void {
+    this.settings.players.forEach(p => p.isCurrentPlayer = false);
     this.appStateService.set('currentSettings', this.settings ? this.settings : defaultSettings)
     console.log(this.appStateService.get('currentSettings'));
     this.router.navigate(['/normal-game'])

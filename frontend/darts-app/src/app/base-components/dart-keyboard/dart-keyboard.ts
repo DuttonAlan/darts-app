@@ -1,4 +1,5 @@
-import { Component, EventEmitter, output, Output } from '@angular/core';
+import { Component, output } from '@angular/core';
+import { DartThrow } from '../../interfaces/dart-throw';
 
 type Multiplier = 1 | 2 | 3;
 
@@ -9,7 +10,7 @@ type Multiplier = 1 | 2 | 3;
   styleUrl: './dart-keyboard.scss',
 })
 export class DartKeyboard {
-  valueSelected = output<number>();
+  valueSelected = output<DartThrow>();
   back = output();
 
   numbers = [
@@ -20,21 +21,35 @@ export class DartKeyboard {
 
   multiplier: Multiplier = 1;
 
-  setMultiplier(value: Multiplier) {
+  public setMultiplier(value: Multiplier) {
+    // Reset multiplier if pressed again
+    if (this.multiplier === value) {
+      this.multiplier = 1;
+      return;
+    }
+
     this.multiplier = value;
   }
 
-  selectNumber(num: number) {
-    this.valueSelected.emit(num * this.multiplier);
+  public selectNumber(num: number) {
+    // Prevent triple bullseye
+    if (num === 25 && this.multiplier === 3) return;
+
+    this.valueSelected.emit({
+      base: num,
+      multiplier: this.multiplier,
+      value: num * this.multiplier
+    });
+
     this.multiplier = 1;
   }
 
-  goBack() {
+  public goBack() {
     this.multiplier = 1;
     this.back.emit();
   }
 
-  isActive(value: Multiplier): boolean {
+  public isActive(value: Multiplier): boolean {
     return this.multiplier === value;
   }
 }

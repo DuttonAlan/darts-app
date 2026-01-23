@@ -11,16 +11,6 @@
         <div class="setting-section">
         <h1>Player details</h1>
 
-        <!-- TODO: Currently not used -->
-
-        <!-- <mat-button-toggle-group
-            [(ngModel)]="settings.mode"
-            [ngModelOptions]="{ standalone: true }"
-            exclusive>
-            <mat-button-toggle class="select-item" [checked]="true" value="SINGLE">Solo</mat-button-toggle>
-            <mat-button-toggle class="select-item" value="TEAMS">Teams</mat-button-toggle>
-        </mat-button-toggle-group> -->
-
         <div class="players">
             @for (player of settings.players; track player) {
             <mat-chip>

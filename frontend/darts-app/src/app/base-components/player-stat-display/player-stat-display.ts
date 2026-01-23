@@ -1,7 +1,8 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { PointDisplay } from "../point-display/point-display";
 import { NgClass } from '@angular/common';
 import { Player } from '../../interfaces/player';
+import { DartThrow } from '../../interfaces/dart-throw';
 
 @Component({
   selector: 'app-player-stat-display',
@@ -12,9 +13,15 @@ import { Player } from '../../interfaces/player';
 export class PlayerStatDisplay {
   player = input.required<Player>();
 
-  points = input<number[] | undefined>();
+  points = input<DartThrow[] | undefined>();
 
   public get thrownPoints(): number {
-    return this.points()?.reduce((sum, n) => sum + n, 0) ?? 0;
+    return this.points()?.reduce((sum, n) => sum + n.value, 0) ?? 0;
+  }
+
+  public get currentPoints(): number {
+    return this.player().isCurrentPlayer 
+      ? (this.player().currentPoints ?? 0) - this.thrownPoints
+      : (this.player().currentPoints ?? 0)
   }
 }

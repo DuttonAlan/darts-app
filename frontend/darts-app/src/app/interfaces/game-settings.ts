@@ -1,12 +1,10 @@
 import { Player } from "./player";
 
-export type GameMode = 'SINGLE' | 'TEAMS';
 export type InMode = 'SINGLE_IN' | 'DOUBLE_IN' | 'TRIPLE_IN';
 export type OutMode = 'DOUBLE_OUT' | 'MASTER_OUT' | 'SINGLE_OUT';
 export type WinType = 'BEST_OF' | 'FIRST_TO';
 
 export interface GameSettings {
-  mode: GameMode;
   winType: WinType;
   winValue: number;
 
@@ -21,7 +19,6 @@ export interface GameSettings {
 }
 
 export const defaultSettings: GameSettings = {
-  mode: 'SINGLE',
   winType: 'BEST_OF',
   winValue: 3,
   legs: 1,
@@ -34,32 +31,30 @@ export const defaultSettings: GameSettings = {
         id: 1,
         name: 'Alan',
         isBot: false,
-        isCurrentPlayer: true
+        isCurrentPlayer: false,
+        legsWon: 0,
+        setsWon: 0,
+        lastTurnThrows: []
       },
       {
         id: 2,
         name: 'Alex',
         isBot: false,
-        isCurrentPlayer: false
+        isCurrentPlayer: false,
+        legsWon: 0,
+        setsWon: 0,
+        lastTurnThrows: []
       },
       {
         id: 3,
         name: 'Jannik',
         isBot: false,
-        isCurrentPlayer: false
+        isCurrentPlayer: false,
+        legsWon: 0,
+        setsWon: 0,
+        lastTurnThrows: []
       }
   ]
-}
-
-export function formatGameMode(value: GameMode): string {
-  switch (value) {
-    case 'SINGLE':
-      return 'Single';
-    case 'TEAMS':
-      return 'Teams';
-    default:
-      return value;
-  }
 }
 
 export function formatInMode(value: InMode): string {

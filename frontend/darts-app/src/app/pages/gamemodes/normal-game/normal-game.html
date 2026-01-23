@@ -14,7 +14,7 @@
                 @for (player of settings.players; track player) {
                     <app-player-stat-display
                         [player]="player"
-                        [points]="player.isCurrentPlayer ? currentThrows : []">
+                        [points]="player.isCurrentPlayer ? currentThrows : player.lastTurnThrows">
 
                     </app-player-stat-display>
                 }

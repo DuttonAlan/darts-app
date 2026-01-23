@@ -1,8 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { AppStateService } from '../../state/app-state.service';
 import { Subject, takeUntil } from 'rxjs';
-import { GameMode, GameSettings, InMode, OutMode, WinType, defaultSettings, formatGameMode, formatInMode, formatOutMode, formatWinType } from '../../interfaces/game-settings';
-import { GameSettingsComponent } from '../../pages/game-settings/game-settings';
+import { GameSettings, InMode, OutMode, WinType, defaultSettings, formatInMode, formatOutMode, formatWinType } from '../../interfaces/game-settings';
 
 @Component({
   selector: 'app-game-infos',
@@ -10,7 +9,7 @@ import { GameSettingsComponent } from '../../pages/game-settings/game-settings';
   templateUrl: './game-infos.html',
   styleUrl: './game-infos.scss',
 })
-export class GameInfos {
+export class GameInfos implements OnInit, OnDestroy {
   private appStateService = inject(AppStateService);
 
   private destroy$ = new Subject<void>();
