@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { defaultSettings, GameSettings } from '../../interfaces/game-settings';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,6 +12,10 @@ import { MatSliderModule } from '@angular/material/slider';
 import { Router } from '@angular/router';
 import { AppStateService } from '../../state/app-state.service';
 import { Subject, takeUntil } from 'rxjs';
+import { PrimaryButton } from "../../base-components/primary-button/primary-button";
+import { ClosableChip } from "../../base-components/closable-chip/closable-chip";
+import { MatDialog } from '@angular/material/dialog';
+import { NameInputDialog } from '../../base-components/dialogs/name-input-dialog/name-input-dialog';
 
 @Component({
   selector: 'app-game-settings',
@@ -24,13 +28,17 @@ import { Subject, takeUntil } from 'rxjs';
     MatInputModule,
     MatFormFieldModule,
     MatSlideToggleModule,
-    FormsModule
-  ],
+    FormsModule,
+    PrimaryButton,
+    ClosableChip
+],
   templateUrl: './game-settings.html',
   styleUrl: './game-settings.scss',
 })
 export class GameSettingsComponent implements OnInit, OnDestroy {
   private router = inject(Router);
+  private dialog = inject(MatDialog);
+  private cd = inject(ChangeDetectorRef);
   private appStateService = inject(AppStateService);
 
   private destroy$ = new Subject<void>();
@@ -51,6 +59,10 @@ export class GameSettingsComponent implements OnInit, OnDestroy {
     { label: 'Master Out', value: 'MASTER_OUT' }
   ];
 
+  public get playersExist(): boolean {
+    return this.settings.players.length > 0
+  }
+
   ngOnInit(): void {
     this.appStateService
       .getAsObservable()
@@ -65,26 +77,50 @@ export class GameSettingsComponent implements OnInit, OnDestroy {
 		this.destroy$.complete();
 	}
 
-  public addPlayer(): void {
-    this.settings?.players.push({
-      id: 0,
-      name: `guest_${this.settings.players.length + 1}`,
+  public removePlayer(playerId: number): void {
+    this.settings.players = this.settings.players.filter(p => p.id !== playerId);
+  }
+
+  public startGame(): void {
+    this.resetPlayerStats();
+    this.appStateService.set('currentSettings', this.settings ? this.settings : defaultSettings)
+    this.router.navigate(['/normal-game'])
+  }
+
+  public navigateToHomepage(): void {
+    this.router.navigate(['/'])
+  }
+
+  public openNameInputDialog(): void {
+    const dialogRef = this.dialog.open(NameInputDialog, {
+      panelClass: 'no-material-dialog-styles',
+    });
+
+    dialogRef.afterClosed().subscribe((playerName: string): void => {
+      if (playerName) {
+        this.addPlayer(playerName);
+      }
+    });
+  }
+
+  private addPlayer(playerName: string): void {
+    this.settings.players.push({
+      id: this.settings.players.length + 1,
+      name: playerName,
       isBot: false,
       isCurrentPlayer: false,
       legsWon: 0,
       setsWon: 0,
       lastTurnThrows: []
     });
+
+    this.cd.detectChanges();
   }
 
-  public startGame(): void {
+  private resetPlayerStats(): void {
     this.settings.players.forEach(p => p.isCurrentPlayer = false);
-    this.appStateService.set('currentSettings', this.settings ? this.settings : defaultSettings)
-    console.log(this.appStateService.get('currentSettings'));
-    this.router.navigate(['/normal-game'])
-  }
-
-  public navigateToHomepage(): void {
-    this.router.navigate(['/'])
+    this.settings.players.forEach(p => p.legsWon = 0);
+    this.settings.players.forEach(p => p.setsWon = 0);
+    this.settings.players.forEach(p => p.lastTurnThrows = []);
   }
 }

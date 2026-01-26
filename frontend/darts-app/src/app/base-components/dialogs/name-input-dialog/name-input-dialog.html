@@ -1,0 +1,15 @@
+<app-base-dialog
+  dialogTitle="Add a new Player"
+  primaryBtnText="Add"
+  (closed)="onCancel()"
+  (primaryClicked)="onPrimaryClick()"
+>
+  <div class="dialog-content">
+    <span class="grey-text">
+        <mat-form-field class="example-form-field">
+            <mat-label>Player name</mat-label>
+            <input matInput type="text" [(ngModel)]="playerName">
+        </mat-form-field>
+    </span>
+  </div>
+</app-base-dialog>

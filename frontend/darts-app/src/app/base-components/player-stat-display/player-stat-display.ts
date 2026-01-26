@@ -24,4 +24,14 @@ export class PlayerStatDisplay {
       ? (this.player().currentPoints ?? 0) - this.thrownPoints
       : (this.player().currentPoints ?? 0)
   }
+
+  get avgPointsFormatted(): string {
+    const value = this.player()?.avgPoints;
+    return value == null
+      ? '–'
+      : value.toLocaleString('de-DE', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 1
+        });
+  }
 }

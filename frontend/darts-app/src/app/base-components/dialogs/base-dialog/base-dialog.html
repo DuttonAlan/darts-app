@@ -1,0 +1,17 @@
+<div class="modal">
+  <div class="header">
+    {{ dialogTitle() }}
+  </div>
+
+  <ng-content></ng-content>
+
+  <div class="footer">
+    <app-primary-button text="Cancel" (clicked)="close()">
+
+    </app-primary-button>
+
+    <app-primary-button [text]="primaryBtnText()" (clicked)="primaryClick()">
+
+    </app-primary-button>
+  </div>
+</div>

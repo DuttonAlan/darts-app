@@ -4,7 +4,11 @@
     padding: 24px;
     background-color: #24292e;
     color: white;
-    height: 707px;
+    height: 720px;
+
+    .back-button {
+        margin-left: 20px;
+    }
 
     .settings {
         display: flex;
@@ -17,6 +21,49 @@
             gap: 24px;
             padding: 20px;
             border-radius: 16px;
+            overflow-wrap: normal;
+
+            .players {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+
+                ::ng-deep .mat-mdc-standard-chip:not(.mdc-evolution-chip--disabled) .mdc-evolution-chip__text-label {
+                    color: white;
+                }
+
+                .icon-btn {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    background: none;
+                    border: none;
+
+                    color: white;
+                    font-size: medium;
+                    gap: 4px;
+
+                    cursor: pointer;
+
+                    .icon {
+                        height: 20px;
+                        width: 20px;
+
+                        border-radius: 50%;
+                        transition: background-color 0.2s ease;
+                        cursor: pointer;
+
+                        :hover {
+                            background-color: rgba(0, 0, 0, 0.1);
+                        }
+                    }
+                }
+
+                .add-button {
+                    flex: 0 0 auto;
+                }
+            }
 
             .select-item {
                 width: 100%;

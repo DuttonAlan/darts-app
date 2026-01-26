@@ -30,9 +30,18 @@ body {
   height: 100%;
 }
 
-.mat-button-toggle-appearance-standard.mat-button-toggle-checked
-.mat-button-toggle-label-content {
-    color: black !important;
+.no-material-dialog-styles .mat-mdc-dialog-container {
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
-
+/* Styles remove the custom styles from the dialogs */
+.no-material-dialog-styles .mat-mdc-dialog-surface {
+  padding: 0 !important;
+  box-shadow: none !important;
+  background: none !important;
+  border-radius: 0 !important;
+  overflow: visible;
+}

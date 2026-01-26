@@ -27,33 +27,33 @@ export const defaultSettings: GameSettings = {
   inMode: 'SINGLE_IN',
   outMode: 'DOUBLE_OUT',
   players: [
-      {
-        id: 1,
-        name: 'Alan',
-        isBot: false,
-        isCurrentPlayer: false,
-        legsWon: 0,
-        setsWon: 0,
-        lastTurnThrows: []
-      },
-      {
-        id: 2,
-        name: 'Alex',
-        isBot: false,
-        isCurrentPlayer: false,
-        legsWon: 0,
-        setsWon: 0,
-        lastTurnThrows: []
-      },
-      {
-        id: 3,
-        name: 'Jannik',
-        isBot: false,
-        isCurrentPlayer: false,
-        legsWon: 0,
-        setsWon: 0,
-        lastTurnThrows: []
-      }
+      // {
+      //   id: 1,
+      //   name: 'Alan',
+      //   isBot: false,
+      //   isCurrentPlayer: false,
+      //   legsWon: 0,
+      //   setsWon: 0,
+      //   lastTurnThrows: []
+      // },
+      // {
+      //   id: 2,
+      //   name: 'Alex',
+      //   isBot: false,
+      //   isCurrentPlayer: false,
+      //   legsWon: 0,
+      //   setsWon: 0,
+      //   lastTurnThrows: []
+      // },
+      // {
+      //   id: 3,
+      //   name: 'Jannik',
+      //   isBot: false,
+      //   isCurrentPlayer: false,
+      //   legsWon: 0,
+      //   setsWon: 0,
+      //   lastTurnThrows: []
+      // }
   ]
 }
 

@@ -1,30 +1,29 @@
 <div class="settings-container">
     <div>
-        <button
-            mat-raised-button
-            (click)="navigateToHomepage()">
-            <| Back
-        </button>
+        <app-primary-button class="back-button" text="Back" (clicked)="navigateToHomepage()">
+
+        </app-primary-button>
     </div>
     <div class="settings">
         <!-- PLAYER -->
         <div class="setting-section">
-        <h1>Player details</h1>
+            <h1>Player details</h1>
 
-        <div class="players">
-            @for (player of settings.players; track player) {
-            <mat-chip>
-                {{ player.name }}
-            </mat-chip>
-            }
+            <div class="players">
+                @for (player of settings.players; track player) {
+                    <app-closable-chip [text]="player.name" (closeChip)="removePlayer(player.id)">
 
-            <button
-            mat-mini-fab
-            color="primary"
-            (click)="addPlayer()">
-            <mat-icon>add</mat-icon>
-            </button>
-        </div>
+                    </app-closable-chip>
+                }
+
+                <button
+                    mat-mini-fab
+                    color="primary"
+                    class="add-button"
+                    (click)="openNameInputDialog()">
+                    <mat-icon>add</mat-icon>
+                </button>
+            </div>
         </div>
 
         <!-- GAME SETTINGS -->
@@ -82,10 +81,12 @@
         </div>
     </div>
 
-    <button
-        mat-raised-button
-        class="start-button"
-        (click)="startGame()">
-        Start Game
-    </button>
+    @if (playersExist) {
+        <button
+            mat-raised-button
+            class="start-button"
+            (click)="startGame()">
+            Start Game
+        </button>
+    }
 </div>

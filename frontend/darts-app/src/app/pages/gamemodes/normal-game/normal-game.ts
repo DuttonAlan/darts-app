@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit, OnDestroy, QueryList, ViewChildren } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppStateService } from '../../../state/app-state.service';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,14 +11,18 @@ import { KraftAusDemInneren } from "../../../base-components/breakfast-animation
 import { DartThrow } from '../../../interfaces/dart-throw';
 import { TurnHistory } from '../../../interfaces/turn-history';
 import { Player } from '../../../interfaces/player';
+import { ScrollableItemDirective } from '../../../directives/scrollable-item.directive';
+import { PrimaryButton } from "../../../base-components/primary-button/primary-button";
 
 @Component({
   selector: 'app-normal-game',
-  imports: [MatButtonModule, PlayerStatDisplay, GameInfos, DartKeyboard, KraftAusDemInneren],
+  imports: [MatButtonModule, PlayerStatDisplay, GameInfos, DartKeyboard, KraftAusDemInneren, ScrollableItemDirective, PrimaryButton],
   templateUrl: './normal-game.html',
   styleUrl: './normal-game.scss',
 })
 export class NormalGame implements OnInit, OnDestroy {
+  @ViewChildren(ScrollableItemDirective) scrollableItems: QueryList<ScrollableItemDirective> | undefined;
+
   private router = inject(Router);
   private appStateService = inject(AppStateService);
   private cdr = inject(ChangeDetectorRef);
@@ -39,6 +43,10 @@ export class NormalGame implements OnInit, OnDestroy {
       .subscribe((state) => {
         this.settings = state.currentSettings;
       });
+
+    if (this.settings.players.length === 0) {
+      this.router.navigate(['/game-settings'])
+    }
 
     this.initializePlayers();
   }
@@ -91,17 +99,18 @@ export class NormalGame implements OnInit, OnDestroy {
     const index = this.getCurrentPlayerIndex();
     const nextIndex = (index + 1) % this.settings.players.length;
     this.setCurrentPlayerByIndex(nextIndex);
+
+    this.scrollToActivePlayer()
   }
 
   public redoThrow(): void {
-    this.calculateAvgThrows();
-
     if (this.currentThrows.length > 0) {
       this.currentThrows.pop();
       return;
     }
 
     this.undoLastTurnPartially();
+    this.calculateAvgThrows();
   }
   
   public navigateToHomepage(): void {
@@ -127,8 +136,6 @@ export class NormalGame implements OnInit, OnDestroy {
   }
 
   private updatePlayerPoints(): void {
-    this.calculateAvgThrows();
-    
     const playerIndex = this.getCurrentPlayerIndex();
     const player = this.settings.players[playerIndex];
 
@@ -152,8 +159,9 @@ export class NormalGame implements OnInit, OnDestroy {
 
     player.currentPoints = newScore;
     this.currentThrows = [];
-  }
 
+    this.calculateAvgThrows();
+  }
 
   private handleLegWin(): void {
     const player = this.getCurrentPlayer();
@@ -231,6 +239,8 @@ export class NormalGame implements OnInit, OnDestroy {
 
     // Reset player point display
     player.lastTurnThrows = [];
+
+    this.scrollToActivePlayer();
   }
 
   private getCurrentPlayerIndex(): number {
@@ -259,8 +269,22 @@ export class NormalGame implements OnInit, OnDestroy {
       ? allThrows.reduce((sum, t) => sum + t.value, 0) / allThrows.length
       : 0;
 
-      console.log(avg)
-
     this.settings.players[index].avgPoints = avg;
+  }
+
+  private scrollToActivePlayer(): void {
+    if (!this.scrollableItems) return;
+
+    const activeIndex = this.settings.players.findIndex(
+      p => p.isCurrentPlayer
+    );
+
+    if (activeIndex === -1) return;
+
+    const item = this.scrollableItems.find(
+      d => d.index() === activeIndex
+    );
+
+    item?.scrollIntoView();
   }
 }

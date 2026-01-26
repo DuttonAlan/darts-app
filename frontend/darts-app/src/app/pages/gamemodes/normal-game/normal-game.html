@@ -1,21 +1,20 @@
 <div class="game-container">
     <div>
-        <button
-            mat-raised-button
-            (click)="navigateToHomepage()">
-            <| Back
-        </button>
+        <app-primary-button text="Back" (clicked)="navigateToHomepage()">
+
+        </app-primary-button>
     </div>
     <div class="game-content">
         <div class="game-infos">
             <app-game-infos></app-game-infos>
 
             <div class="players">
-                @for (player of settings.players; track player) {
+                @for (player of settings.players; let i = $index; track player) {
                     <app-player-stat-display
+                        appScrollableItem
+                        [index]="i"
                         [player]="player"
                         [points]="player.isCurrentPlayer ? currentThrows : player.lastTurnThrows">
-
                     </app-player-stat-display>
                 }
             </div>
