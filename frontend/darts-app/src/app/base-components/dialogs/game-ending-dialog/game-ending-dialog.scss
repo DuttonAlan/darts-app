@@ -1,0 +1,63 @@
+.modal {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #24292e;
+  border-radius: 4px;
+  padding: 32px;
+
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 500px;
+  height: 400px;
+
+  .header {
+    display: flex;
+    align-items: flex-start;
+    font-weight: bold;
+    font-size: 1.5rem;
+    padding-bottom: 16px;
+
+    color: white;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    width: 436;
+    height: 200px;
+    font-size: large;
+
+    padding: 32px;
+    background-color: #2e343a;
+
+    .content-titel {
+        display: flex;
+        justify-content: space-between;
+        .date {
+            color: white;
+            font-weight: bold;
+        }
+
+        .finished {
+            color: #2FD159;
+            font-weight: bold;
+        }
+    }
+
+    .game-settings {
+        padding-top: 16px;
+        color: lightgray;
+    }
+  }
+
+  .footer {
+    display: flex;
+    gap: 12px;
+    margin-left: auto;
+    margin-top: auto;
+  }
+}

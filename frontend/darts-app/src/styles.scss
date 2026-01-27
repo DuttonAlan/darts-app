@@ -30,6 +30,15 @@ body {
   height: 100%;
 }
 
+/* Needed to remove the default background of the snackbar */
+.mat-mdc-snack-bar-container.transparent-snackbar .mdc-snackbar__surface,
+.mat-mdc-snack-bar-container.transparent-snackbar mat-mdc-snackbar-surface,
+.mat-mdc-snack-bar-container.transparent-snackbar .mat-mdc-snackbar-surface {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
 .no-material-dialog-styles .mat-mdc-dialog-container {
   padding: 0 !important;
   background: transparent !important;

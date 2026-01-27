@@ -2,9 +2,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #3b4046;
     width: 64px;
     height: 40px;
+
+    &.is-bust {
+        background-color: #d52a2c;
+    }
+
+    &.normal {
+        background-color: #3b4046;
+    }
 
     .points {
         color: white;

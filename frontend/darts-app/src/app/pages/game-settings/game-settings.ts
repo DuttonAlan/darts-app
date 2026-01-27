@@ -59,8 +59,8 @@ export class GameSettingsComponent implements OnInit, OnDestroy {
     { label: 'Master Out', value: 'MASTER_OUT' }
   ];
 
-  public get playersExist(): boolean {
-    return this.settings.players.length > 0
+  public get showStartButton(): boolean {
+    return this.settings.players.length > 0 && this.settings.legs > 0 && this.settings.sets > 0
   }
 
   ngOnInit(): void {
@@ -122,5 +122,6 @@ export class GameSettingsComponent implements OnInit, OnDestroy {
     this.settings.players.forEach(p => p.legsWon = 0);
     this.settings.players.forEach(p => p.setsWon = 0);
     this.settings.players.forEach(p => p.lastTurnThrows = []);
+    this.settings.players.forEach(p => p.lastTurnWasBust = false);
   }
 }

@@ -40,12 +40,23 @@
             <div class="input-container">
                 <mat-form-field class="example-form-field">
                     <mat-label>Legs</mat-label>
-                    <input matInput type="text" [(ngModel)]="settings.legs">
+                    <input
+                        matInput
+                        type="number"
+                        step="1"
+                        min="1"
+                        [(ngModel)]="settings.legs">
+
                 </mat-form-field>
 
                 <mat-form-field class="example-form-field">
                     <mat-label>Sets</mat-label>
-                    <input matInput type="text" [(ngModel)]="settings.sets">
+                    <input
+                        matInput
+                        type="number"
+                        step="1"
+                        min="1"
+                        [(ngModel)]="settings.sets">
                 </mat-form-field>
             </div>
 
@@ -81,7 +92,7 @@
         </div>
     </div>
 
-    @if (playersExist) {
+    @if (showStartButton) {
         <button
             mat-raised-button
             class="start-button"

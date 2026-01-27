@@ -1,7 +1,7 @@
 .grid {
     display: grid;
     grid-template-columns: repeat(7, 72px);
-    gap: 4px;
+    gap: 6px;
 
     button {
         width: 72px;
@@ -9,15 +9,32 @@
         font-size: 1.4rem;
         font-weight: bold;
         padding: 0;
+
+        color: white;
+        background-color: #636267;
+        border: none;
     }
 
     .wide {
         grid-column: span 2;
         width: 148px;
+        color: white;
+
+        &.double {
+            background-color: #FF9F00;
+        }
+
+        &.triple {
+            background-color: #EF6C00;
+        }
+
+        &.back {
+            background-color: #E53935;
+        }
     }
 
     .active {
-        color: red;
+        background-color: black;
     }
 
     .back {

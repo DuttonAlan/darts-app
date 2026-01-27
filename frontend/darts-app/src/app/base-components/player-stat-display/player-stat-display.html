@@ -27,17 +27,11 @@
         </div>
 
         <div class="stat-content">
-            <app-point-display [points]="points()?.[0]?.value">
+            <app-point-display [isBust]="isBust()" [points]="points()?.[0]?.value"></app-point-display>
 
-            </app-point-display>
+            <app-point-display [isBust]="isBust()" [points]="points()?.[1]?.value"></app-point-display>
 
-            <app-point-display [points]="points()?.[1]?.value">
-                
-            </app-point-display>
-
-            <app-point-display [points]="points()?.[2]?.value">
-                
-            </app-point-display>
+            <app-point-display [isBust]="isBust()" [points]="points()?.[2]?.value"></app-point-display>
 
             <span class="current-points"> {{ thrownPoints }} </span>
         </div>

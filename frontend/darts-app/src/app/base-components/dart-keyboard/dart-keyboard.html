@@ -10,7 +10,7 @@
   <button (click)="selectNumber(0)">0</button>
 
   <button
-    class="wide"
+    [ngClass]="isActive(2) ? 'wide' : 'wide double'"
     [class.active]="isActive(2)"
     (click)="setMultiplier(2)"
   >
@@ -18,7 +18,7 @@
   </button>
 
   <button
-    class="wide"
+    [ngClass]="isActive(3) ? 'wide' : 'wide triple'"
     [class.active]="isActive(3)"
     (click)="setMultiplier(3)"
   >

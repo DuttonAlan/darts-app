@@ -13,6 +13,9 @@ import { TurnHistory } from '../../../interfaces/turn-history';
 import { Player } from '../../../interfaces/player';
 import { ScrollableItemDirective } from '../../../directives/scrollable-item.directive';
 import { PrimaryButton } from "../../../base-components/primary-button/primary-button";
+import { MessageService } from '../../../services/message.service';
+import { GameEndingDialog } from '../../../base-components/dialogs/game-ending-dialog/game-ending-dialog';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-normal-game',
@@ -23,8 +26,10 @@ import { PrimaryButton } from "../../../base-components/primary-button/primary-b
 export class NormalGame implements OnInit, OnDestroy {
   @ViewChildren(ScrollableItemDirective) scrollableItems: QueryList<ScrollableItemDirective> | undefined;
 
+  private dialog = inject(MatDialog);
   private router = inject(Router);
   private appStateService = inject(AppStateService);
+  private messageService = inject(MessageService);
   private cdr = inject(ChangeDetectorRef);
 
   private destroy$ = new Subject<void>();
@@ -54,6 +59,8 @@ export class NormalGame implements OnInit, OnDestroy {
   ngOnDestroy(): void {
 		this.destroy$.next();
 		this.destroy$.complete();
+
+    this.throwHistory = [];
 	}
 
   public newThrow(throwData: DartThrow): void {
@@ -67,8 +74,8 @@ export class NormalGame implements OnInit, OnDestroy {
     const newScore = scoreBefore - sum;
 
     // Bust, end turn
-    if (newScore < 0) {
-      this.finishTurn(false);
+    if (this.isPlayerBust(newScore)) {
+      this.finishTurn(false, true);
       return;
     }
 
@@ -84,8 +91,8 @@ export class NormalGame implements OnInit, OnDestroy {
     }
   }
 
-  private finishTurn(isWinningThrow: boolean): void {
-    this.updatePlayerPoints();
+  private finishTurn(isWinningThrow: boolean, isBust = false): void {
+    this.updatePlayerPoints(isBust);
 
     if (isWinningThrow) {
       this.handleLegWin();
@@ -135,7 +142,7 @@ export class NormalGame implements OnInit, OnDestroy {
     })
   }
 
-  private updatePlayerPoints(): void {
+  private updatePlayerPoints(isBust: boolean): void {
     const playerIndex = this.getCurrentPlayerIndex();
     const player = this.settings.players[playerIndex];
 
@@ -143,29 +150,31 @@ export class NormalGame implements OnInit, OnDestroy {
     const sum = this.currentThrows.reduce((a, t) => a + t.value, 0);
     const newScore = scoreBefore - sum;
 
-    if (newScore < 0) {
-      this.currentThrows = [];
-      return;
-    }
-
     player.lastTurnThrows = [...this.currentThrows];
+    player.lastTurnWasBust = isBust;
 
     this.throwHistory.push({
       playerIndex,
       throws: [...this.currentThrows],
       scoreBefore,
-      scoreAfter: newScore
+      scoreAfter: isBust ? scoreBefore : newScore,
+      isBust
     });
 
-    player.currentPoints = newScore;
-    this.currentThrows = [];
+    if (!isBust) {
+      player.currentPoints = newScore;
+    }
 
+    this.currentThrows = [];
     this.calculateAvgThrows();
   }
+
 
   private handleLegWin(): void {
     const player = this.getCurrentPlayer();
     player.legsWon++;
+
+    this.messageService.showSuccess(`${player.name} won a Leg!`);
 
     // Check if Set was won.
     if (player.legsWon >= this.settings.legs) {
@@ -181,7 +190,7 @@ export class NormalGame implements OnInit, OnDestroy {
 
     // Check if Match was won
     if (player.setsWon >= this.settings.sets) {
-      this.handleMatchWin(player);
+      this.handleMatchWin();
       return;
     }
 
@@ -204,8 +213,40 @@ export class NormalGame implements OnInit, OnDestroy {
     this.settings.players.forEach(p => p.legsWon = 0);
   }
 
-  private handleMatchWin(player: Player): void {
-    console.log(`${player.name} hat das Match gewonnen!`);
+  private undoLastTurnPartially(): void {
+    const lastTurn = this.throwHistory.pop();
+    if (!lastTurn) return;
+
+    const player = this.settings.players[lastTurn.playerIndex];
+
+    this.setCurrentPlayerByIndex(lastTurn.playerIndex);
+    player.currentPoints = lastTurn.scoreBefore;
+
+    // Undo bust
+    player.lastTurnWasBust = false;
+
+    // redo lastTurn
+    this.currentThrows = [...lastTurn.throws];
+    this.currentThrows.pop();
+
+    // Reset player point display
+    player.lastTurnThrows = [];
+
+    this.scrollToActivePlayer();
+  }
+
+  private isPlayerBust(newScore: number): boolean {
+    switch (this.settings.outMode) {
+      case 'DOUBLE_OUT':
+        return newScore < 0 || newScore === 1;
+
+      case 'MASTER_OUT':
+        return newScore < 0 || newScore === 1;
+
+      case 'SINGLE_OUT':
+      default:
+        return newScore < 0;
+    }
   }
 
   private isValidOut(lastThrow: DartThrow): boolean {
@@ -224,23 +265,17 @@ export class NormalGame implements OnInit, OnDestroy {
     }
   }
 
-  private undoLastTurnPartially(): void {
-    const lastTurn = this.throwHistory.pop();
-    if (!lastTurn) return;
+  private handleMatchWin(): void {
+    const dialogRef = this.dialog.open(GameEndingDialog, {
+      data: {
+        settings: this.settings
+      },
+      panelClass: 'no-material-dialog-styles',
+    });
 
-    const player = this.settings.players[lastTurn.playerIndex];
+    dialogRef.afterClosed().subscribe((result): void => {
 
-    this.setCurrentPlayerByIndex(lastTurn.playerIndex);
-    player.currentPoints = lastTurn.scoreBefore;
-
-    // redo lastTurn
-    this.currentThrows = [...lastTurn.throws];
-    this.currentThrows.pop();
-
-    // Reset player point display
-    player.lastTurnThrows = [];
-
-    this.scrollToActivePlayer();
+    });
   }
 
   private getCurrentPlayerIndex(): number {
@@ -258,6 +293,9 @@ export class NormalGame implements OnInit, OnDestroy {
     this.settings.players[index].isCurrentPlayer = true;
   }
 
+  /**
+   * Calculates the average points per turn (3 Throws combined)
+   */
   private calculateAvgThrows(): void {
     const index = this.getCurrentPlayerIndex();
 
@@ -266,12 +304,15 @@ export class NormalGame implements OnInit, OnDestroy {
       .flatMap(turn => turn.throws);
 
     const avg = allThrows.length > 0
-      ? allThrows.reduce((sum, t) => sum + t.value, 0) / allThrows.length
+      ? (allThrows.reduce((sum, t) => sum + t.value, 0) / allThrows.length) * 3
       : 0;
 
     this.settings.players[index].avgPoints = avg;
   }
 
+  /**
+   * Scrolls to the active Player.
+   */
   private scrollToActivePlayer(): void {
     if (!this.scrollableItems) return;
 

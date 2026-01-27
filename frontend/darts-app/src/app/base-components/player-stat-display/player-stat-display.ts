@@ -14,6 +14,7 @@ export class PlayerStatDisplay {
   player = input.required<Player>();
 
   points = input<DartThrow[] | undefined>();
+  isBust = input<boolean>(false);
 
   public get thrownPoints(): number {
     return this.points()?.reduce((sum, n) => sum + n.value, 0) ?? 0;
@@ -29,9 +30,9 @@ export class PlayerStatDisplay {
     const value = this.player()?.avgPoints;
     return value == null
       ? '–'
-      : value.toLocaleString('de-DE', {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 1
+      : value.toLocaleString('en-EN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
         });
   }
 }

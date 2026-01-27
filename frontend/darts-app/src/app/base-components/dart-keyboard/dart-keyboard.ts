@@ -1,15 +1,19 @@
 import { Component, output } from '@angular/core';
 import { DartThrow } from '../../interfaces/dart-throw';
+import { NgClass } from '@angular/common';
 
 type Multiplier = 1 | 2 | 3;
 
 @Component({
   selector: 'app-dart-keyboard',
-  imports: [],
+  imports: [NgClass],
   templateUrl: './dart-keyboard.html',
   styleUrl: './dart-keyboard.scss',
 })
 export class DartKeyboard {
+  private dartHit = new Audio('assets/sounds/dart-hit.mp3');
+  private dartHitHard = new Audio('assets/sounds/dart-hit-hard.mp3');
+
   valueSelected = output<DartThrow>();
   back = output();
 
@@ -40,6 +44,15 @@ export class DartKeyboard {
       multiplier: this.multiplier,
       value: num * this.multiplier
     });
+
+    // if (num * this.multiplier === 50) {
+    //   this.dartHitHard.currentTime = 0;
+    //   this.dartHitHard.play();
+    // }
+    // else {
+    //   this.dartHit.currentTime = 0;
+    //   this.dartHit.play();
+    // }
 
     this.multiplier = 1;
   }

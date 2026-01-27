@@ -5,6 +5,5 @@ export interface TurnHistory {
   throws: DartThrow[];
   scoreBefore: number;
   scoreAfter: number;
+  isBust: boolean;
 }
-
-

@@ -1,0 +1,22 @@
+.snackbar-content {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 4px 12px;
+  color: black;
+  font: 18px;
+  gap: 8px;
+
+  .snackbar-text {
+    font-size: medium;
+    color: black;
+  }
+
+  &.success {
+    background-color: #bad8bd;
+  }
+
+  &.error {
+    background-color: #f3bcbc;
+  }
+}

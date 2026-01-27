@@ -14,7 +14,8 @@
                         appScrollableItem
                         [index]="i"
                         [player]="player"
-                        [points]="player.isCurrentPlayer ? currentThrows : player.lastTurnThrows">
+                        [points]="player.isCurrentPlayer ? currentThrows : player.lastTurnThrows"
+                        [isBust]="!player.isCurrentPlayer && (player.lastTurnWasBust ?? false)">>
                     </app-player-stat-display>
                 }
             </div>

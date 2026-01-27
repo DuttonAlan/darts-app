@@ -13,5 +13,6 @@ export interface Player {
   setsWon: number;
 
   lastTurnThrows: DartThrow[];
+  lastTurnWasBust?: boolean;
 }
 

@@ -1,5 +1,5 @@
 <button
-    class="primary-button"
+    [ngClass]="redBColor() ? 'primary-button red' : 'primary-button'"
     (click)="triggerClick()">
     {{ text() }}
 </button>
