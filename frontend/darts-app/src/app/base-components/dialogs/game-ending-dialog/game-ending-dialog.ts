@@ -1,7 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { PrimaryButton } from "../../primary-button/primary-button";
-import { Router } from '@angular/router';
 import { formatInMode, formatOutMode, GameSettings, InMode, OutMode } from '../../../interfaces/game-settings';
 import { Player } from '../../../interfaces/player';
 
@@ -17,7 +16,6 @@ interface PlayerRanking {
   styleUrl: './game-ending-dialog.scss',
 })
 export class GameEndingDialog implements OnInit {
-  private router = inject(Router);
   private dialogRef = inject(MatDialogRef<GameEndingDialog>);
   private winSound = new Audio('assets/sounds/win.mp3');
 
@@ -105,8 +103,7 @@ export class GameEndingDialog implements OnInit {
   }
 
   public goToSettings(): void {
-    this.dialogRef.close();
-    this.router.navigate(['/game-settings'])
+    this.dialogRef.close(false);
   }
 
   public redo(): void {

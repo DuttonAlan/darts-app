@@ -25,7 +25,7 @@ import { GameSnapshot } from '../../../interfaces/game-snapshot';
   styleUrl: './normal-game.scss',
 })
 export class NormalGame implements OnInit, OnDestroy {
-  @ViewChildren(ScrollableItemDirective) scrollableItems: QueryList<ScrollableItemDirective> | undefined;
+  @ViewChildren(ScrollableItemDirective) scrollableItems?: QueryList<ScrollableItemDirective>;
 
   private dialog = inject(MatDialog);
   private router = inject(Router);
@@ -35,48 +35,45 @@ export class NormalGame implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
+  // Game State
   settings: GameSettings = defaultSettings;
 
   currentThrows: DartThrow[] = [];
   throwHistory: TurnHistory[] = [];
   gameUndoStack: GameSnapshot[] = [];
 
-  isBreakfast = false;
   legStartPlayerIndex = 0;
+  isBreakfast = false;
 
   ngOnInit(): void {
     this.appStateService
       .getAsObservable()
       .pipe(takeUntil(this.destroy$))
-      .subscribe((state) => {
+      .subscribe(state => {
         this.settings = state.currentSettings;
       });
 
     if (this.settings.players.length === 0) {
-      this.router.navigate(['/game-settings'])
+      this.navigateToSettings();
     }
 
     this.initializePlayers();
   }
 
   ngOnDestroy(): void {
-		this.destroy$.next();
-		this.destroy$.complete();
-	}
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   /**
-   * Processes a new throw
-   * @param throwData new throw.
+   * Processes a new dart throw.
    */
   public newThrow(throwData: DartThrow): void {
     if (this.currentThrows.length >= 3) return;
 
     this.currentThrows.push(throwData);
 
-    const player = this.getCurrentPlayer();
-    const scoreBefore = player.currentPoints ?? this.settings.startScore;
-    const sum = this.currentThrows.reduce((a, t) => a + t.value, 0);
-    const newScore = scoreBefore - sum;
+    const newScore = this.calculateScoreAfterThrows().newScore;
 
     // Bust, end turn
     if (this.isPlayerBust(newScore)) {
@@ -96,9 +93,47 @@ export class NormalGame implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Undo logic triggered from UI.
+   * Priority: dart -> turn -> game state.
+   */
+  public redoThrow(forceGameState = false): void {
+    if (this.currentThrows.length > 0 && !forceGameState) {
+      this.currentThrows.pop();
+      return;
+    }
+
+    if (this.throwHistory.length > 0 && !forceGameState) {
+      this.undoLastTurnPartially();
+      this.calculateAvgThrows();
+      return;
+    }
+
+    this.undoGameState();
+  }
+
+  public navigateToSettings(): void {
+    this.router.navigate(['/game-settings']);
+    return;
+  }
+
+  /**
+   * Triggers breakfast animation.
+   */
+  public triggerBreakfast(): void {
+    this.isBreakfast = true;
+
+    timer(11_000).subscribe(() => {
+      this.isBreakfast = false;
+      this.cdr.detectChanges();
+    });
+  }
+
+  /**
+   * Ends the current turn and applies game rules.
+   */
   private finishTurn(isWinningThrow: boolean, isBust = false): void {
     this.saveGameSnapshot();
-
     this.updatePlayerPoints(isBust);
 
     if (isWinningThrow) {
@@ -109,29 +144,68 @@ export class NormalGame implements OnInit, OnDestroy {
     this.setNextPlayer();
   }
 
-  private setNextPlayer(): void {
-    const index = this.getCurrentPlayerIndex();
-    const nextIndex = (index + 1) % this.settings.players.length;
-    this.setCurrentPlayerByIndex(nextIndex);
+  /**
+   * Handles leg win logic and rotates leg starter.
+   */
+  private handleLegWin(): void {
+    const player = this.getCurrentPlayer();
+    player.legsWon++;
 
-    this.scrollToActivePlayer()
-  }
+    this.messageService.showSuccess(`${player.name} won a Leg!`);
+    this.rotateLegStarter();
 
-  public redoThrow(forceGameState = false): void {
-    if (this.currentThrows.length > 0 != forceGameState) {
-      this.currentThrows.pop();
+    if (player.legsWon >= this.settings.legs) {
+      this.handleSetWin(player);
       return;
     }
 
-    if (this.throwHistory.length > 0 != forceGameState) {
-      this.undoLastTurnPartially();
-      this.calculateAvgThrows();
+    this.startNewLeg();
+  }
+
+  /**
+   * Handles set win logic.
+   */
+  private handleSetWin(player: Player): void {
+    player.setsWon++;
+
+    if (player.setsWon >= this.settings.sets) {
+      this.handleMatchWin();
       return;
     }
 
-    this.undoGameState();
+    this.resetLegs();
+    this.startNewLeg();
   }
 
+  /**
+   * Opens match end dialog.
+   */
+  private handleMatchWin(): void {
+    const dialogRef = this.dialog.open(GameEndingDialog, {
+      data: { settings: this.settings },
+      panelClass: 'no-material-dialog-styles',
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      result ? this.redoThrow() : this.navigateToSettings();
+    });
+  }
+
+  /**
+   * Saves a full snapshot of the current game state.
+   */
+  private saveGameSnapshot(): void {
+    this.gameUndoStack.push({
+      players: structuredClone(this.settings.players),
+      throwHistory: structuredClone(this.throwHistory),
+      currentThrows: [...this.currentThrows],
+      currentPlayerIndex: this.getCurrentPlayerIndex(),
+    });
+  }
+
+  /**
+   * Restores the last full game snapshot.
+   */
   private undoGameState(): void {
     const snapshot = this.gameUndoStack.pop();
     if (!snapshot) return;
@@ -141,41 +215,45 @@ export class NormalGame implements OnInit, OnDestroy {
     this.currentThrows = [...snapshot.currentThrows];
 
     this.setCurrentPlayerByIndex(snapshot.currentPlayerIndex);
-
     this.calculateAvgThrows();
     this.scrollToActivePlayer();
-  }
-  
-  public navigateToHomepage(): void {
-    this.router.navigate(['/game-settings'])
-  }
 
-  public triggerBreakfast(): void {
-    this.isBreakfast = true;
-
-    timer(11_000).subscribe(() => {
-      this.isBreakfast = false;
+    queueMicrotask(() => {
       this.cdr.detectChanges();
+      this.scrollToActivePlayer();
     });
+
+    this.currentThrows.pop();
   }
 
-  private initializePlayers(): void {
-    this.legStartPlayerIndex = 0;
+  /**
+   * Undo only the last completed turn.
+   */
+  private undoLastTurnPartially(): void {
+    const lastTurn = this.throwHistory.pop();
+    if (!lastTurn) return;
 
-    this.settings.players.forEach((player, index) => {
-      player.isCurrentPlayer = index === this.legStartPlayerIndex;
-      player.currentPoints = this.settings.startScore;
-      player.avgPoints = 0;
-    });
+    const player = this.settings.players[lastTurn.playerIndex];
+
+    this.setCurrentPlayerByIndex(lastTurn.playerIndex);
+    player.currentPoints = lastTurn.scoreBefore;
+    player.lastTurnWasBust = false;
+
+    this.currentThrows = [...lastTurn.throws];
+    this.currentThrows.pop();
+    player.lastTurnThrows = [];
+
+    this.scrollToActivePlayer();
   }
 
+  /**
+   * Updates player points and history after a turn.
+   */
   private updatePlayerPoints(isBust: boolean): void {
     const playerIndex = this.getCurrentPlayerIndex();
     const player = this.settings.players[playerIndex];
 
-    const scoreBefore = player.currentPoints ?? this.settings.startScore;
-    const sum = this.currentThrows.reduce((a, t) => a + t.value, 0);
-    const newScore = scoreBefore - sum;
+    const { scoreBefore, newScore } = this.calculateScoreAfterThrows();
 
     player.lastTurnThrows = [...this.currentThrows];
     player.lastTurnWasBust = isBust;
@@ -196,47 +274,66 @@ export class NormalGame implements OnInit, OnDestroy {
     this.calculateAvgThrows();
   }
 
-  private handleLegWin(): void {
-    const player = this.getCurrentPlayer();
-    player.legsWon++;
+  /**
+   * Calculates average points per turn (3-dart average).
+   */
+  private calculateAvgThrows(): void {
+    const index = this.getCurrentPlayerIndex();
 
-    this.messageService.showSuccess(`${player.name} won a Leg!`);
+    const allThrows = this.throwHistory
+      .filter(t => t.playerIndex === index)
+      .flatMap(t => t.throws);
 
-    this.rotateLegStarter();
+    const avg = allThrows.length
+      ? (allThrows.reduce((s, t) => s + t.value, 0) / allThrows.length) * 3
+      : 0;
 
-    if (player.legsWon >= this.settings.legs) {
-      this.handleSetWin(player);
-      return;
-    }
-
-    this.startNewLeg();
+    this.settings.players[index].avgPoints = avg;
   }
 
-  private rotateLegStarter(): void {
-    this.legStartPlayerIndex =
-      (this.legStartPlayerIndex + 1) % this.settings.players.length;
+  /**
+   * Determines if a player is busted based on out mode.
+   */
+  private isPlayerBust(newScore: number): boolean {
+    switch (this.settings.outMode) {
+      case 'DOUBLE_OUT':
+      case 'MASTER_OUT':
+        return newScore < 0 || newScore === 1;
+      default:
+        return newScore < 0;
+    }
   }
 
-  private handleSetWin(player: Player): void {
-    player.setsWon++;
-
-    // Check if Match was won
-    if (player.setsWon >= this.settings.sets) {
-      this.handleMatchWin();
-      return;
+  /**
+   * Checks if the last dart fulfills checkout rules.
+   */
+  private isValidOut(lastThrow: DartThrow): boolean {
+    switch (this.settings.outMode) {
+      case 'DOUBLE_OUT':
+        return lastThrow.multiplier === 2;
+      case 'MASTER_OUT':
+        return lastThrow.multiplier === 2 || lastThrow.multiplier === 3;
+      default:
+        return true;
     }
+  }
 
-    // New Set
-    this.resetLegs();
-    this.startNewLeg();
+  private initializePlayers(): void {
+    this.legStartPlayerIndex = 0;
+
+    this.settings.players.forEach((p, i) => {
+      p.isCurrentPlayer = i === this.legStartPlayerIndex;
+      p.currentPoints = this.settings.startScore;
+      p.avgPoints = 0;
+    });
   }
 
   private startNewLeg(): void {
-    this.settings.players.forEach((p, index) => {
+    this.settings.players.forEach((p, i) => {
       p.currentPoints = this.settings.startScore;
       p.lastTurnThrows = [];
-      p.isCurrentPlayer = index === this.legStartPlayerIndex;
       p.lastTurnWasBust = false;
+      p.isCurrentPlayer = i === this.legStartPlayerIndex;
     });
 
     this.currentThrows = [];
@@ -244,83 +341,30 @@ export class NormalGame implements OnInit, OnDestroy {
   }
 
   private resetLegs(): void {
-    this.settings.players.forEach(p => p.legsWon = 0);
+    this.settings.players.forEach(p => (p.legsWon = 0));
   }
 
-  private undoLastTurnPartially(): void {
-    const lastTurn = this.throwHistory.pop();
-    if (!lastTurn) return;
+  private rotateLegStarter(): void {
+    this.legStartPlayerIndex =
+      (this.legStartPlayerIndex + 1) % this.settings.players.length;
+  }
 
-    const player = this.settings.players[lastTurn.playerIndex];
-
-    this.setCurrentPlayerByIndex(lastTurn.playerIndex);
-    player.currentPoints = lastTurn.scoreBefore;
-
-    // Undo bust
-    player.lastTurnWasBust = false;
-
-    // redo lastTurn
-    this.currentThrows = [...lastTurn.throws];
-    this.currentThrows.pop();
-
-    // Reset player point display
-    player.lastTurnThrows = [];
-
+  private setNextPlayer(): void {
+    const next =
+      (this.getCurrentPlayerIndex() + 1) % this.settings.players.length;
+    this.setCurrentPlayerByIndex(next);
     this.scrollToActivePlayer();
   }
 
-  private saveGameSnapshot(): void {
-    this.gameUndoStack.push({
-      players: structuredClone(this.settings.players),
-      throwHistory: structuredClone(this.throwHistory),
-      currentThrows: [...this.currentThrows],
-      currentPlayerIndex: this.getCurrentPlayerIndex(),
-    });
-  }
+  private calculateScoreAfterThrows(): { scoreBefore: number; newScore: number } {
+    const player = this.getCurrentPlayer();
+    const scoreBefore = player.currentPoints ?? this.settings.startScore;
+    const sum = this.currentThrows.reduce((a, t) => a + t.value, 0);
 
-  private isPlayerBust(newScore: number): boolean {
-    switch (this.settings.outMode) {
-      case 'DOUBLE_OUT':
-        return newScore < 0 || newScore === 1;
-
-      case 'MASTER_OUT':
-        return newScore < 0 || newScore === 1;
-
-      case 'SINGLE_OUT':
-      default:
-        return newScore < 0;
-    }
-  }
-
-  private isValidOut(lastThrow: DartThrow): boolean {
-    switch (this.settings.outMode) {
-      case 'DOUBLE_OUT':
-        return lastThrow.multiplier === 2;
-
-      case 'MASTER_OUT':
-        return lastThrow.multiplier === 2 || lastThrow.multiplier === 3;
-
-      case 'SINGLE_OUT':
-        return true;
-
-      default:
-        return false;
-    }
-  }
-
-  private handleMatchWin(): void {
-    const dialogRef = this.dialog.open(GameEndingDialog, {
-      data: {
-        settings: this.settings
-      },
-      panelClass: 'no-material-dialog-styles',
-    });
-
-    dialogRef.afterClosed().subscribe((result): void => {
-      if (result) {
-        this.redoThrow(true);
-      }
-    });
+    return {
+      scoreBefore,
+      newScore: scoreBefore - sum,
+    };
   }
 
   private getCurrentPlayerIndex(): number {
@@ -328,48 +372,22 @@ export class NormalGame implements OnInit, OnDestroy {
   }
 
   private getCurrentPlayer(): Player {
-    const index = this.getCurrentPlayerIndex();
-
-    return this.settings.players[index];
+    return this.settings.players[this.getCurrentPlayerIndex()];
   }
 
   private setCurrentPlayerByIndex(index: number): void {
-    this.settings.players.forEach(p => p.isCurrentPlayer = false);
+    this.settings.players.forEach(p => (p.isCurrentPlayer = false));
     this.settings.players[index].isCurrentPlayer = true;
   }
 
   /**
-   * Calculates the average points per turn (3 Throws combined)
-   */
-  private calculateAvgThrows(): void {
-    const index = this.getCurrentPlayerIndex();
-
-    const allThrows: DartThrow[] = this.throwHistory
-      .filter(turn => turn.playerIndex === index)
-      .flatMap(turn => turn.throws);
-
-    const avg = allThrows.length > 0
-      ? (allThrows.reduce((sum, t) => sum + t.value, 0) / allThrows.length) * 3
-      : 0;
-
-    this.settings.players[index].avgPoints = avg;
-  }
-
-  /**
-   * Scrolls to the active Player.
+   * Scrolls the active player into view.
    */
   private scrollToActivePlayer(): void {
     if (!this.scrollableItems) return;
 
-    const activeIndex = this.settings.players.findIndex(
-      p => p.isCurrentPlayer
-    );
-
-    if (activeIndex === -1) return;
-
-    const item = this.scrollableItems.find(
-      d => d.index() === activeIndex
-    );
+    const index = this.getCurrentPlayerIndex();
+    const item = this.scrollableItems.find(d => d.index() === index);
 
     item?.scrollIntoView();
   }
