@@ -22,15 +22,16 @@
         </div>
 
         <div class="dart-keyboard">
-            <app-dart-keyboard (valueSelected)="newThrow($event)" (back)="redoThrow()">
-
+            <app-dart-keyboard 
+                (valueSelected)="newThrow($event)" 
+                (back)="redoThrow()">
             </app-dart-keyboard>
 
             <button 
                 role="button" 
                 class="golden-button"
-                (click)="triggerBreakfast()"
-            >
+                (click)="triggerBreakfast()">
+                
                 <span class="golden-text">Breakfast</span>
             </button>
         </div>

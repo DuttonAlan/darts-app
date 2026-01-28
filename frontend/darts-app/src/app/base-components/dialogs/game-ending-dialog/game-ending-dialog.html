@@ -1,16 +1,3 @@
-<app-base-dialog
-  dialogTitle="Game overview"
-  primaryBtnText="Add"
-  (closed)="onCancel()"
-  (primaryClicked)="onPrimaryClick()"
->
-  <div class="dialog-content">
-    <span class="grey-text">
-        
-    </span>
-  </div>
-</app-base-dialog>
-
 <div class="modal">
   <div class="header">
     Game Overview
@@ -23,7 +10,34 @@
     </div>
 
 
-    <span class="game-settings">{{ data.settings.startScore }} - {{ getInMode(data.settings.inMode)}} - {{ getOutMode(data.settings.outMode) }} - {{ getWinType(data.settings.winType) }} {{ data.settings.legs }} Legs {{ data.settings.sets }} Sets</span>
+    <span class="game-settings">{{ data.settings.startScore }} - {{ getInMode(data.settings.inMode)}} - {{ getOutMode(data.settings.outMode) }} - First to {{ data.settings.legs }} Legs {{ data.settings.sets }} Sets</span>
+
+    <div class="player-stats-container">
+      @for (player of playerRanked; track player) {
+        <div class="single-player-stats">
+          <div>
+            <span class="grey-text"> {{ player.rank }}. </span>
+            <span class="important-text"> {{ player.player.name }} </span>
+          </div>
+
+          <div>
+            <div class="individual-stats">
+              <span class="grey-text">Sets: </span> <span class="important-text">{{ player.player.legsWon }}</span>
+
+              <span class="grey-text">Legs: </span> <span class="important-text">{{ player.player.setsWon }}</span>
+            </div>
+
+            <div class="individual-points">
+              <span class="important-text">{{ player.player.currentPoints }}</span>
+
+              <span class="important-text"> ⌀ {{ getAvgPointsFormatted(player.player) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+      }
+    </div>
   </div>
 
   <div class="footer">

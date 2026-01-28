@@ -16,6 +16,7 @@ import { PrimaryButton } from "../../../base-components/primary-button/primary-b
 import { MessageService } from '../../../services/message.service';
 import { GameEndingDialog } from '../../../base-components/dialogs/game-ending-dialog/game-ending-dialog';
 import { MatDialog } from '@angular/material/dialog';
+import { GameSnapshot } from '../../../interfaces/game-snapshot';
 
 @Component({
   selector: 'app-normal-game',
@@ -33,13 +34,15 @@ export class NormalGame implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
 
   private destroy$ = new Subject<void>();
-    
+
   settings: GameSettings = defaultSettings;
 
   currentThrows: DartThrow[] = [];
   throwHistory: TurnHistory[] = [];
+  gameUndoStack: GameSnapshot[] = [];
 
   isBreakfast = false;
+  legStartPlayerIndex = 0;
 
   ngOnInit(): void {
     this.appStateService
@@ -59,10 +62,12 @@ export class NormalGame implements OnInit, OnDestroy {
   ngOnDestroy(): void {
 		this.destroy$.next();
 		this.destroy$.complete();
-
-    this.throwHistory = [];
 	}
 
+  /**
+   * Processes a new throw
+   * @param throwData new throw.
+   */
   public newThrow(throwData: DartThrow): void {
     if (this.currentThrows.length >= 3) return;
 
@@ -92,6 +97,8 @@ export class NormalGame implements OnInit, OnDestroy {
   }
 
   private finishTurn(isWinningThrow: boolean, isBust = false): void {
+    this.saveGameSnapshot();
+
     this.updatePlayerPoints(isBust);
 
     if (isWinningThrow) {
@@ -110,14 +117,33 @@ export class NormalGame implements OnInit, OnDestroy {
     this.scrollToActivePlayer()
   }
 
-  public redoThrow(): void {
-    if (this.currentThrows.length > 0) {
+  public redoThrow(forceGameState = false): void {
+    if (this.currentThrows.length > 0 != forceGameState) {
       this.currentThrows.pop();
       return;
     }
 
-    this.undoLastTurnPartially();
+    if (this.throwHistory.length > 0 != forceGameState) {
+      this.undoLastTurnPartially();
+      this.calculateAvgThrows();
+      return;
+    }
+
+    this.undoGameState();
+  }
+
+  private undoGameState(): void {
+    const snapshot = this.gameUndoStack.pop();
+    if (!snapshot) return;
+
+    this.settings.players = structuredClone(snapshot.players);
+    this.throwHistory = structuredClone(snapshot.throwHistory);
+    this.currentThrows = [...snapshot.currentThrows];
+
+    this.setCurrentPlayerByIndex(snapshot.currentPlayerIndex);
+
     this.calculateAvgThrows();
+    this.scrollToActivePlayer();
   }
   
   public navigateToHomepage(): void {
@@ -134,12 +160,13 @@ export class NormalGame implements OnInit, OnDestroy {
   }
 
   private initializePlayers(): void {
-    this.settings.players[0].isCurrentPlayer = true;
+    this.legStartPlayerIndex = 0;
 
-    this.settings.players.forEach((player) => {
+    this.settings.players.forEach((player, index) => {
+      player.isCurrentPlayer = index === this.legStartPlayerIndex;
       player.currentPoints = this.settings.startScore;
       player.avgPoints = 0;
-    })
+    });
   }
 
   private updatePlayerPoints(isBust: boolean): void {
@@ -169,20 +196,25 @@ export class NormalGame implements OnInit, OnDestroy {
     this.calculateAvgThrows();
   }
 
-
   private handleLegWin(): void {
     const player = this.getCurrentPlayer();
     player.legsWon++;
 
     this.messageService.showSuccess(`${player.name} won a Leg!`);
 
-    // Check if Set was won.
+    this.rotateLegStarter();
+
     if (player.legsWon >= this.settings.legs) {
       this.handleSetWin(player);
       return;
     }
 
-    this.startNewLeg(player);
+    this.startNewLeg();
+  }
+
+  private rotateLegStarter(): void {
+    this.legStartPlayerIndex =
+      (this.legStartPlayerIndex + 1) % this.settings.players.length;
   }
 
   private handleSetWin(player: Player): void {
@@ -196,13 +228,15 @@ export class NormalGame implements OnInit, OnDestroy {
 
     // New Set
     this.resetLegs();
-    this.startNewLeg(player);
+    this.startNewLeg();
   }
 
-  private startNewLeg(startingPlayer: Player): void {
-    this.settings.players.forEach(p => {
+  private startNewLeg(): void {
+    this.settings.players.forEach((p, index) => {
       p.currentPoints = this.settings.startScore;
-      p.isCurrentPlayer = p.id === startingPlayer.id;
+      p.lastTurnThrows = [];
+      p.isCurrentPlayer = index === this.legStartPlayerIndex;
+      p.lastTurnWasBust = false;
     });
 
     this.currentThrows = [];
@@ -233,6 +267,15 @@ export class NormalGame implements OnInit, OnDestroy {
     player.lastTurnThrows = [];
 
     this.scrollToActivePlayer();
+  }
+
+  private saveGameSnapshot(): void {
+    this.gameUndoStack.push({
+      players: structuredClone(this.settings.players),
+      throwHistory: structuredClone(this.throwHistory),
+      currentThrows: [...this.currentThrows],
+      currentPlayerIndex: this.getCurrentPlayerIndex(),
+    });
   }
 
   private isPlayerBust(newScore: number): boolean {
@@ -274,7 +317,9 @@ export class NormalGame implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe((result): void => {
-
+      if (result) {
+        this.redoThrow(true);
+      }
     });
   }
 

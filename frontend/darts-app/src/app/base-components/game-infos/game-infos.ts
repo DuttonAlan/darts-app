@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { AppStateService } from '../../state/app-state.service';
 import { Subject, takeUntil } from 'rxjs';
-import { GameSettings, InMode, OutMode, WinType, defaultSettings, formatInMode, formatOutMode, formatWinType } from '../../interfaces/game-settings';
+import { GameSettings, InMode, OutMode, defaultSettings, formatInMode, formatOutMode } from '../../interfaces/game-settings';
 
 @Component({
   selector: 'app-game-infos',
@@ -36,9 +36,5 @@ export class GameInfos implements OnInit, OnDestroy {
 
   public getOutMode(outMode: OutMode): string {
     return formatOutMode(outMode);
-  }
-
-  public getWinType(winType: WinType): string {
-    return formatWinType(winType);
   }
 }

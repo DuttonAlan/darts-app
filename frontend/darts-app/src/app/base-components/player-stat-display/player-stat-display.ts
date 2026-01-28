@@ -26,7 +26,7 @@ export class PlayerStatDisplay {
       : (this.player().currentPoints ?? 0)
   }
 
-  get avgPointsFormatted(): string {
+  public get avgPointsFormatted(): string {
     const value = this.player()?.avgPoints;
     return value == null
       ? '–'

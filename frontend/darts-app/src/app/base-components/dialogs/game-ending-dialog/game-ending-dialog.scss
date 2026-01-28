@@ -12,14 +12,14 @@
   transform: translate(-50%, -50%);
 
   width: 500px;
-  height: 400px;
+  max-height: 700px;
 
   .header {
     display: flex;
     align-items: flex-start;
     font-weight: bold;
     font-size: 1.5rem;
-    padding-bottom: 16px;
+    padding-bottom: 32px;
 
     color: white;
   }
@@ -28,24 +28,65 @@
     display: flex;
     flex-direction: column;
     width: 436;
-    height: 200px;
+    max-height: 300px;
+    overflow: scroll;
     font-size: large;
 
     padding: 32px;
     background-color: #2e343a;
 
     .content-titel {
+      display: flex;
+      justify-content: space-between;
+
+      .date {
+        color: white;
+        font-weight: bold;
+      }
+
+      .finished {
+        color: #2FD159;
+        font-weight: bold;
+      }
+    }
+
+    .player-stats-container {
+      display: flex;
+      flex-direction: column;
+      padding-top: 16px;
+      gap: 8px;
+
+      .grey-text {
+        color: lightgray;
+      }
+
+      .important-text {
+        color: white;
+      }
+
+      .single-player-stats {
         display: flex;
         justify-content: space-between;
-        .date {
-            color: white;
-            font-weight: bold;
+        align-items: center;
+
+        .individual-stats {
+          display: flex;
+          gap: 8px;
         }
 
-        .finished {
-            color: #2FD159;
-            font-weight: bold;
+        .individual-points {
+          display: flex;
+          margin-top: 4px;
+          justify-content: space-between;
         }
+      }
+
+      .divider {
+        width: 436px;
+        height: 1px;
+        background-color: lightgray;
+        margin-bottom: 8px;
+      }
     }
 
     .game-settings {
@@ -58,6 +99,6 @@
     display: flex;
     gap: 12px;
     margin-left: auto;
-    margin-top: auto;
+    margin-top: 32px;
   }
 }
