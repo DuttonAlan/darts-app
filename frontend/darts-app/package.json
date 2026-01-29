@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "github-build": "ng build --configuration production --base-href 'https://DuttonAlan.github.io/DartDoedel/'"
   },
   "prettier": {
     "printWidth": 100,
