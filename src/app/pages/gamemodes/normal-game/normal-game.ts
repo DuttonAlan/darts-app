@@ -186,7 +186,7 @@ export class NormalGame implements OnInit, OnDestroy {
       panelClass: 'no-material-dialog-styles',
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result: boolean) => {
       result ? this.redoThrow() : this.navigateToSettings();
     });
   }
