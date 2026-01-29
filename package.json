@@ -8,7 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "github-build": "ng build --configuration production --base-href 'https://DuttonAlan.github.io/DartDoedel/'"
+    "github-build": "ng build --configuration production --base-href https://duttonalan.github.io/DartDoedel/",
+    "github-deploy": "npx angular-cli-ghpages --dir=dist/darts-app/browser --no-silent"
   },
   "prettier": {
     "printWidth": 100,
