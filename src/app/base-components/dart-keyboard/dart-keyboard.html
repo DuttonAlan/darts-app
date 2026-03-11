@@ -1,27 +1,30 @@
 <div class="grid">
     @for (number of numbers; track number) {
         <button
-            (click)="selectNumber(number)"
+          [ngClass]="isActive(3) && number === 25 ? 'disabled' : ''"
+          (click)="selectNumber(number)"
         >
-            {{ number }}
+          {{ number }}
         </button>
     }
 
-  <button (click)="selectNumber(0)">0</button>
+  <button 
+    [ngClass]="isActive(3) || isActive(2) ? 'disabled' : ''"
+    (click)="selectNumber(0)">
+    0
+  </button>
 
   <button
     [ngClass]="isActive(2) ? 'wide' : 'wide double'"
     [class.active]="isActive(2)"
-    (click)="setMultiplier(2)"
-  >
+    (click)="setMultiplier(2)">
     DOUBLE
   </button>
 
   <button
     [ngClass]="isActive(3) ? 'wide' : 'wide triple'"
     [class.active]="isActive(3)"
-    (click)="setMultiplier(3)"
-  >
+    (click)="setMultiplier(3)">
     TRIPLE
   </button>
 

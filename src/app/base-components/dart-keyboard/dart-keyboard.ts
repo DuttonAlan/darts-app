@@ -36,23 +36,14 @@ export class DartKeyboard {
   }
 
   public selectNumber(num: number) {
-    // Prevent triple bullseye
+    // Prevent triple bullseye and tripple/double null
     if (num === 25 && this.multiplier === 3) return;
+    if (num === 0 && (this.multiplier !== 1)) return;
 
     this.valueSelected.emit({
-      base: num,
       multiplier: this.multiplier,
       value: num * this.multiplier
     });
-
-    // if (num * this.multiplier === 50) {
-    //   this.dartHitHard.currentTime = 0;
-    //   this.dartHitHard.play();
-    // }
-    // else {
-    //   this.dartHit.currentTime = 0;
-    //   this.dartHit.play();
-    // }
 
     this.multiplier = 1;
   }

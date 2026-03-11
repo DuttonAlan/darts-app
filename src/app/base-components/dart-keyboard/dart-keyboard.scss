@@ -13,6 +13,11 @@
         color: white;
         background-color: #636267;
         border: none;
+
+        &.disabled {
+            color: grey;
+            background-color: black;
+        }
     }
 
     .wide {
